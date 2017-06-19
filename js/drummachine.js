@@ -29,7 +29,50 @@ var kMaxSwing = .08;
 
 var currentKit;
 
+
+///--------------------------
+
+var tempoinc=1
+var countloops=0;
+var savetempo=100;
+var silenceinfo=0;
+var fix=true;
 var onoff=-1;
+var symbolsFlow='abcdef+-*/ .z'
+var arrSymbolsFlow=symbolsFlow.split('');
+//var strFlow='';
+function randomSymbols(num){
+	var es='',e='';
+	while (es.length < num) {
+		e = symbolsFlow[Math.floor(Math.random() * symbolsFlow.length)];
+		es+=e;
+		if(e=='*'){es+='/'}
+		if(e=='/'){es+='*'}
+		if(e=='-'){es+='+'}
+		if(e=='+'){es+='-'}
+		
+    } 
+     return es;
+}
+
+var strFlow=randomSymbols(16);
+//var strFlow='zabcdef*.../ '
+
+var arrFlow=strFlow.split('');
+
+
+function handleFlow(evt){
+	strFlow=randomSymbols(16);
+	document.getElementById('flow_textarea').value=strFlow;
+	handleFlowOk(event)
+     
+}
+
+
+///------------------
+
+
+
 
 var beatReset = {"kitIndex":0,"effectIndex":0,"tempo":100,"swingFactor":0,"effectMix":0.25,"kickPitchVal":0.5,"snarePitchVal":0.5,"hihatPitchVal":0.5,"tom1PitchVal":0.5,"tom2PitchVal":0.5,"tom3PitchVal":0.5,"rhythm1":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rhythm2":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rhythm3":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rhythm4":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rhythm5":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rhythm6":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
 var beatDemo = [
@@ -40,6 +83,19 @@ var beatDemo = [
     {"kitIndex":0,"effectIndex":1,"tempo":60,"swingFactor":0.5419847328244275,"effectMix":0.25,"kickPitchVal":0.5,"snarePitchVal":0.5,"hihatPitchVal":0.5,"tom1PitchVal":0.5,"tom2PitchVal":0.5,"tom3PitchVal":0.5,"rhythm1":[2,2,0,1,2,2,0,1,2,2,0,1,2,2,0,1],"rhythm2":[0,0,2,0,0,0,2,0,0,0,2,0,0,0,2,0],"rhythm3":[2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1],"rhythm4":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rhythm5":[0,0,1,0,0,1,0,1,0,0,1,0,0,0,1,0],"rhythm6":[1,0,0,1,0,1,0,1,1,0,0,1,1,1,1,0]},
 ];
 
+
+
+
+function cloneRhythm() {
+	
+	beatReset.rhythm1 = theBeat.rhythm1.slice(0);        // slice(0) is an easy way to copy the full array
+    beatReset.rhythm2 = theBeat.rhythm2.slice(0);
+    beatReset.rhythm3 = theBeat.rhythm3.slice(0);
+    beatReset.rhythm4 = theBeat.rhythm4.slice(0);
+    beatReset.rhythm5 = theBeat.rhythm5.slice(0);
+    beatReset.rhythm6 = theBeat.rhythm6.slice(0);
+	
+}
 function cloneBeat(source) {
     var beat = new Object();
     
@@ -76,7 +132,7 @@ var mouseCaptureOffset = 0;
 var loopLength = 16;
 var rhythmIndex = 0;
 var kMinTempo = 1;
-var kMaxTempo = 600;
+var kMaxTempo = 1000;
 var noteTime = 0.0;
 
 var instruments = ['Kick', 'Snare', 'HiHat', 'Tom1', 'Tom2', 'Tom3'];
@@ -198,7 +254,7 @@ Kit.prototype.loadSample = function(sampleID, url, mixToMono) {
             }
         }
     }
- 	 	
+
     request.send();
 }
 
@@ -319,7 +375,6 @@ function startLoadingAssets() {
     
     // Setup initial drumkit
     currentKit = kits[kInitialKitIndex];
-	
 }
 
 function demoButtonURL(demoIndex) {
@@ -353,96 +408,11 @@ function showPlayAvailable() {
     play.src = "images/btn_play.png";
 }
 
-/*function keyDownTextField(e) {
-var keyCode = e.keyCode;
-  if(keyCode==keys.A) {
-     //var r=writeRandbeat()
-	 handleRandOk(event);
-	 handleLoadOk(event);
-	
-  }
-}
-*/
 
-var random_interval=function(){
-//return Math.random()* ((beat.tempo/60)*500);
-return Math.random()*3000
-}
-
-
-var countonoff=0;
-
-function onofff(e){
-	//if(countonoff%4!=0){
-		
-		if(onoff==-1){
-			
-			handleStop(e)
-			
-		}else{
-			handlePlay(e)
-		}
-     //}		
-	onoff*=-1
-	countonoff++;
-	if(countonoff==-1){stopsilences();}
-}
-
-var silencesT;
-function stopsilences(){
-	clearTimeout(silencesT);
-}
-var rand,te;
-function silences(e) {
-  var min = 0.1,
-    max = 10;
-	var secondsPerBeat = 60.0 / theBeat.tempo;
-if(onoff==-1){
-	var te=parseInt(Math.random()*8)
-	//rand = Math.round(Math.random() * (4000 - 200)) + 200;
-	rand=secondsPerBeat*1000*te
-	
-	//theBeat.tempo*=0.5;
-} else{ 
-	//rand = Math.round(Math.random() * (500 - 50)) + 50;
-	
-	//rand = theBeat.tempo/60*1000/4
-	te=parseInt(Math.random()*5)
-	rand = secondsPerBeat*1000*te
-	//theBeat.tempo*=2;
-	
-}
-    silencesT= setTimeout(function() {
-			
-            onofff(e);
-            silences(e); 
-		
-    }, rand);
-}
-
-
-function silencesss(e){
-	
-	  setInterval(function() {
-		 onoff*=-1
-	if(onoff==-1){
-	    handleStop(e)
-	}else{
-		handlePlay(e)
-	}
-} ,random_interval());
-
-
-}
-var keycodesLow='97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 119 107 121 122';//abcde..z
-var keycodesSpacEnter='32 13';
-var keycodesUpp='65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 87 88 89 90';//ABCDEF..Z
-var keycodesNum='49 50 51 52 53 54 55 56 57 48';//123..0
-//var keys={backspace:8,tab:9,enter:13,shift:16,ctrl:17,alt:18,pausebreak:19,capslock:20,esc:27,space:32,pageup:33,pagedown:34,end:35,home:36,leftarrow:37,uparrow:38,rightarrow:39,downarrow:40,insert:45,delete:46,0:48,1:49,2:50,3:51,4:52,5:53,6:54,7:55,8:56,9:57,a:65,b:66,c:67,d:68,e:69,f:70,g:71,h:72,i:73,j:74,k:75,l:76,m:77,n:78,o:79,p:80,q:81,r:82,s:83,t:84,u:85,v:86,w:87,x:88,y:89,z:90,A:65,B:66,C:67,C:68,E:69,F:70,G:71,H:72,I:73,J:74,K:75,L:76,M:77,N:78,O:79,P:80,Q:81,R:82,S:83,T:84,U:85,V:86,W:87,X:88,Y:89,Z:90,leftwindowkey:91,rightwindowkey:92,selectkey:93,numpad0:96,numpad1:97,numpad2:98,numpad3:99,numpad4:100,numpad5:101,numpad6:102,numpad7:103,numpad8:104,numpad9:105,multiply:106,add:107,subtract:109,decimalpoint:110,divide:111,f1:112,f2:113,f3:114,f4:115,f5:116,f6:117,f7:118,f8:119,f9:120,f10:121,f11:122,f12:123,numlock:144,scrolllock:145,semicolon:186,equalsign:187,comma:188,dash:189,period:190,forwardslash:191,graveaccent:192,openbracket:219,backslash:220,closebracket:221,singlequote:222};
 var keys={backspace:8,tab:9,enter:13,shift:16,ctrl:17,alt:18,pausebreak:19,capslock:20,esc:27,space:32,pageup:33,pagedown:34,end:35,home:36,leftarrow:37,uparrow:38,rightarrow:39,downarrow:40,insert:45,delete:46,0:48,1:49,2:50,3:51,4:52,5:53,6:54,7:55,8:56,9:57,a:65,b:66,c:67,d:68,e:69,f:70,g:71,h:72,i:73,j:74,k:75,l:76,m:77,n:78,o:79,p:80,q:81,r:82,s:83,t:84,u:85,v:86,w:87,x:88,y:89,z:90,leftwindowkey:91,rightwindowkey:92,selectkey:93,numpad0:96,numpad1:97,numpad2:98,numpad3:99,numpad4:100,numpad5:101,numpad6:102,numpad7:103,numpad8:104,numpad9:105,multiply:106,add:107,subtract:109,decimalpoint:110,divide:111,f1:112,f2:113,f3:114,f4:115,f5:116,f6:117,f7:118,f8:119,f9:120,f10:121,f11:122,f12:123,numlock:144,scrolllock:145,semicolon:186,equalsign:187,comma:188,dash:189,period:190,forwardslash:191,graveaccent:192,openbracket:219,backslash:220,closebracket:221,singlequote:222};
 //document.body.addEventListener("keydown", keyDownTextField, false);
 
-function myKeyPress(e){
+function thisKeyPress(e){
     var keynum;
     //var keynum = e.which || e.keyCode;
     if(window.event) { // IE                    
@@ -451,22 +421,7 @@ function myKeyPress(e){
       keynum = e.which;
     }
 	
-	 if (keynum==keys['0'] /*48*/){
-	   handleZeroOk(e);
-	   handleLoadOk(e);
-	   handleLoadCancel(e)
-	 }
-	 
-	  if (keynum==keys['1'] /*49*/){
-		
-	  silences(e)
-	  
-	 }
-	 if (keynum==keys.s /*83*/){
-		 // if(coutsilences>0){coutsilences=-1}
-	  stopsilences()
-	  
-	 }
+	
     if (keynum==keys['a']){
 	 writeRandbeat(1);
 	 }
@@ -486,18 +441,13 @@ function myKeyPress(e){
 	 writeRandbeat(6);
 	 }
 	 
+	
 	  if (keynum==keys['z'] /*65*/){
 	 writeRandbeatAll();
 	
 	
 	 }
-	 
-	 if (keynum==keys['enter'] /*97*/){
-	  handleRandOk(e);
-	  handleLoadOk(e);
-	  handleLoadCancel(e)
-	 }
-	 
+
 	 if (keynum==32 /*space*/){
 		
 		 onoff*=-1
@@ -507,47 +457,30 @@ function myKeyPress(e){
 			 handlePlay(e)
 		 }
 	 }
-	 if (keynum==keys['2']){
-	  handleEffectOk(e);
-	  handleLoadOk(e);
-	  handleLoadCancel(e)
-	 }
-	  if (keynum==keys['3'] ){
-	  handleEffectLevelOk(e);
-	  handleLoadOk(e);
-	  handleLoadCancel(e)
-	 }
-	  if (keynum==keys['4'] ){
-	  writePitchbeat()
-	 }
-	  if (keynum==keys['subtract']){
-	    tempoDivide();
+	 
+	 if (keynum==keys['subtract']){
+	    tempo2Divide();
 	 }
 	  if (keynum==keys['add']){
-		tempoMultiply();
+		tempo2Multiply();
 	 }
+	 if (keynum==keys['divide']){
+	    tempo4Divide();
+	 }
+	  if (keynum==keys['multiply']){
+		tempo4Multiply();
+	 }
+	
   }
 
 
 function init() {
+	
+	document.onkeydown = function(event) {
+		thisKeyPress(event);
+      }
     // Let the beat demos know when all of their assets have been loaded.
     // Add some new methods to support this.
-	//var el = document.getElementById("body");
-
-	
-	 document.onkeydown = function(event) {
-		myKeyPress(event);
- 
-      }
-	
-	//var j=writeRandbeatDemo()
-	//beatDemo[1]=JSON.parse(j);
-	
-		//beatDemo[1]=JSON.stringify(eval("(" + writeRandbeatDemo() + ")"));
-		//beatDemo[1]=eval(j);
-		//beatDemo[1]=JSON.stringify(eval("(" + j + ")"));
-		//alert(beatDemo[1])
-	writeRandbeatAll();
     for (var i = 0; i < beatDemo.length; ++i) {
         beatDemo[i].index = i;
         beatDemo[i].isKitLoaded = false;
@@ -572,10 +505,11 @@ function init() {
         beatDemo[i].isLoaded = function() {
             return this.isKitLoaded && this.isEffectLoaded;
         };
+		
     }
         
     startLoadingAssets();
- 
+
     // NOTE: THIS NOW RELIES ON THE MONKEYPATCH LIBRARY TO LOAD
     // IN CHROME AND SAFARI (until they release unprefixed)
     context = new AudioContext();
@@ -635,8 +569,9 @@ function init() {
       schedule();
     };
     timerWorker.postMessage('init'); // Start the worker.
-
-
+	//
+    writeRandbeatAll();
+	document.getElementById('flow_textarea').value=strFlow;
 }
 
 function initControls() {
@@ -665,13 +600,14 @@ function initControls() {
     document.getElementById('swing_thumb').addEventListener('dblclick', handleSliderDoubleClick, true);
 
     // tool buttons
+	document.getElementById('title').addEventListener('mousedown', handleFlow, true);
     document.getElementById('play').addEventListener('mousedown', handlePlay, true);
     document.getElementById('stop').addEventListener('mousedown', handleStop, true);
     document.getElementById('save').addEventListener('mousedown', handleSave, true);
     document.getElementById('save_ok').addEventListener('mousedown', handleSaveOk, true);
     document.getElementById('load').addEventListener('mousedown', handleLoad, true);
     document.getElementById('load_ok').addEventListener('mousedown', handleLoadOk, true);
-	document.getElementById('rand_ok').addEventListener('mousedown', handleRandOk, true);
+	document.getElementById('flow_ok').addEventListener('mousedown', handleFlowOk, true);
     document.getElementById('load_cancel').addEventListener('mousedown', handleLoadCancel, true);
     document.getElementById('reset').addEventListener('mousedown', handleReset, true);
     document.getElementById('demo1').addEventListener('mousedown', handleDemoMouseDown, true);
@@ -727,9 +663,7 @@ function makeKitList() {
         elItem.addEventListener("mousedown", handleKitMouseDown, true);
     }
 }
-var countloops=0;
-var savetempo=100;
-var silenceinfo=0;
+
 function advanceNote() {
     // Advance time by a 16th note...
     var secondsPerBeat = 60.0 / theBeat.tempo;
@@ -739,58 +673,42 @@ function advanceNote() {
         rhythmIndex = 0;
 		countloops++;
     }
-    if(countloops%2==0 && rhythmIndex == 0){
-		 theBeat.tempo=savetempo;
-		 //writeRandbeatAll();
-		 //writeRandbeat(1);
-		
-		 savetemo=theBeat.tempo;
-		 theBeat.tom1PitchVal = Math.random();
-		 theBeat.tom2PitchVal = Math.random();
-		 theBeat.tom3PitchVal = Math.random();
-		 //tempoMultiply();
-		//setEffect(7)
-		//setEffect(parseInt(Math.random()*impulseResponseInfoList.length-1))
-	}
-	if(countloops%2==0 && rhythmIndex ==loopLength-1){
-		//writeRandbeatAll();
-		theBeat.tempo=savetempo;
-		//savetemo=theBeat.tempo;
-		 theBeat.kickPitchVal = Math.random();
-		 theBeat.snarePitchVal = Math.random();
-		 theBeat.hihatPitchVal = Math.random();
-		
-	}
-	if(countloops%2==0 && rhythmIndex ==parseInt(loopLength/2)){
-		
-		//tempoDivide();
-		tempoDivide();
-		//theBeat.effectMix=6;
-		//setEffect(parseInt(Math.random()*impulseResponseInfoList.length-1))
-	}
-	if(countloops%12==0 && rhythmIndex == 0){
-		 writeRandbeatAll();
-	   silenceinfo=countloops;
-	}
-	if(countloops==(silenceinfo+1) && rhythmIndex == 0){
-		 
-	}
-	 if(countloops%10==0 && rhythmIndex == 0){
 
-		  var r=Math.random()
-		  //if(r<0.5){
-		 writeVoid(1)
-		writeVoid(2)
-		writeVoid(3)
-		 // }else{
-		
-		writeVoid(4)
-		writeVoid(5)
-		writeVoid(6)
-		 //}
-		  writePattern(parseInt(Math.random()*6+1))
-		   tempoMultiply();
-	 }		 
+	if(countloops==arrFlow.length){
+		countloops=0;
+	}
+	if(rhythmIndex == 0){
+		//console.log(arrFlow[countloops]+'_')
+	//document.getElementById('title').innerHTML = '_'+arrFlow[countloops]+'_';
+	//document.getElementById('title').innerHTML = strFlow;
+	//var arrf=arrFlow[countloops]
+	var cad=''
+	for(var a=0;a<arrFlow.length;a++){
+		if(a==countloops){cad+='<span style="color:#f00;">'+arrFlow[a]+'</span>';}else{
+			cad+=arrFlow[a];
+		}
+	}
+	//var strf=strFlow;
+	//var subs=strf.substring(countl
+	//document.getElementById('title').innerHTML = strf.replace(arrFlow[countloops], '<span style="color:#f00;">'+arrFlow[countloops]+'</span>');
+	document.getElementById('title').innerHTML =cad;
+		switch(arrFlow[countloops]){
+			case 'z': writeRandbeatAll(); break;
+			case ' ': writeVoidAll(); break;
+			case '.': loadRhythm(); break;
+			case '*': tempo4Multiply(); break;
+			case '/': tempo4Divide(); break;
+			case '+': tempo2Multiply(); break;
+			case '-': tempo2Divide(); break;
+			case 'a': writeRandbeat(1); break;
+			case 'b': writeRandbeat(2); break;
+			case 'c': writeRandbeat(3); break;
+			case 'd': writeRandbeat(4); break;
+			case 'e': writeRandbeat(5); break;
+			case 'f': writeRandbeat(6); break;
+		}	
+	}
+	
         // apply swing    
     if (rhythmIndex % 2) {
         noteTime += (0.25 + kMaxSwing * theBeat.swingFactor) * secondsPerBeat;
@@ -909,20 +827,28 @@ function playDrum(noteNumber, velocity) {
 
 
 function tempoIncrease() {
-    theBeat.tempo = Math.min(kMaxTempo, theBeat.tempo+1);
+    theBeat.tempo = Math.min(kMaxTempo, theBeat.tempo+tempoinc);
     document.getElementById('tempo').innerHTML = theBeat.tempo;
 }
 
 function tempoDecrease() {
-    theBeat.tempo = Math.max(kMinTempo, theBeat.tempo-1);
+    theBeat.tempo = Math.max(kMinTempo, theBeat.tempo-tempoinc);
     document.getElementById('tempo').innerHTML = theBeat.tempo;
 }
-function tempoDivide() {
+function tempo2Multiply() {
+    theBeat.tempo = Math.min(kMaxTempo, theBeat.tempo*2);
+    document.getElementById('tempo').innerHTML = theBeat.tempo;
+}
+function tempo2Divide() {
     theBeat.tempo = Math.max(kMinTempo, theBeat.tempo*0.5);
     document.getElementById('tempo').innerHTML = theBeat.tempo;
 }
-function tempoMultiply() {
-    theBeat.tempo = Math.min(kMaxTempo, theBeat.tempo*2);
+function tempo4Multiply() {
+    theBeat.tempo = Math.min(kMaxTempo, theBeat.tempo*4);
+    document.getElementById('tempo').innerHTML = theBeat.tempo;
+}
+function tempo4Divide() {
+    theBeat.tempo = Math.max(kMinTempo, theBeat.tempo*0.25);
     document.getElementById('tempo').innerHTML = theBeat.tempo;
 }
 function handleSliderMouseDown(event) {
@@ -1237,7 +1163,7 @@ function handlePlay(event) {
     startTime = context.currentTime + 0.005;
     schedule();
     timerWorker.postMessage("start");
-    savetempo=theBeat.tempo;
+
     document.getElementById('play').classList.add('playing');
     document.getElementById('stop').classList.add('playing');
     if (midiOut) {
@@ -1312,248 +1238,19 @@ function handleLoadOk(event) {
     toggleLoadContainer();
     updateControls();
 }
-function writeRandbeatDemo(){
-	var cad='{';
-	cad+='"kitIndex":'+parseInt(Math.random()*(kitName.length-1))+',';
-	cad+='"effectIndex":'+parseInt(Math.random()*(impulseResponseInfoList.length-1))+',';
-	cad+='"tempo":'+theBeat.tempo+',';
-	cad+='"swingFactor":0,';
-	cad+='"effectMix":'+Math.random()+',';
-	cad+='"kickPitchVal":'+Math.random()+',';
-	cad+='"snarePitchVal":'+Math.random()+',';
-	cad+='"hihatPitchVal":'+Math.random()+',';
-	cad+='"tom1PitchVal":'+Math.random()+',';
-	cad+='"tom2PitchVal":'+Math.random()+',';
-	cad+='"tom3PitchVal":'+Math.random()+',';
-	var d =0,c=0;
-	for(var a=1;a<7;a++){
-		cad+='"rhythm'+a+'":['
-		for(var b=0;b<16;b++){
-		 d = Math.random() * 100;
-		
-			if (d > 30) c= 0;
-			if (d < 20) c= 1;
-			if (d < 8)  c= 2;
 
-			//var c=Math.floor(Math.random()*3)
-			cad+=c+',';
-		}
-		cad = cad.slice(0, -1);
-		cad+='],'
-	}
-    cad = cad.slice(0, -1);
-	cad+='}'
-	return cad
-}
-
-
-function writeRandbeatAll(n){
-	var cad='{';
-	var d =0,c=0;
-	for(var a=1;a<7;a++){
-		cad='';
-		for(var b=0;b<16;b++){
-		 d = Math.random() * 100;
-		
-			if (d > 30) c= 0;
-			if (d < 20) c= 1;
-			if (d < 8)  c= 2;
-			//if(b%4==0){c=Math.floor(Math.random() * 2) + 1   }
-			if(b%2==0  || b%4==0 ){
-				//c=Math.floor(Math.random() * 2) + 1  
-			if(b%4==0 ){
-				//c=Math.floor(Math.random() * 2) + 1  ;
-				if (d > 80) c= 0;
-			    if (d < 60) c= 1;
-			    if (d < 8)  c= 2;
-				}
-			theBeat['rhythm'+a][b]=c
-			beatDemo[1]['rhythm'+a][b]=c
-			drawNote(c, b, a-1) 
-			}else{
-				c=0;
-				theBeat['rhythm'+a][b]=c
-				beatDemo[1]['rhythm'+a][b]=c
-			drawNote(c, b, a-1) 
-				
-			}
-			//var c=Math.floor(Math.random()*3)
-			//cad+=c+',';
-		}
-		//cad = cad.slice(0, -1);
-		//theBeat['rhythm'+a]=cad.split(',')
-	}
-	//alert(theBeat.toSource())
-    
+function handleFlowOk(event) {
 	
+	arrFlow=[];
+    strFlow = document.getElementById('flow_textarea').value;
+    arrFlow = strFlow.split('');
+
+    // Clear out the text area post-processing
+    //elTextarea.value = '';
+
+    toggleLoadContainer();
+    //updateControls();
 }
-
-function writeVoid(n){
-	var cad='{';
-	var d =0,c=0;
-	for(var a=1;a<7;a++){
-		cad='';
-		for(var b=0;b<16;b++){
-			if(a==n ){
-						c=0;
-				theBeat['rhythm'+a][b]=c
-			drawNote(c, b, a-1) 
-			}
-		}
-	}
-}
-
-function writePattern(n){
-	var cad='{';
-	var d =0,c=0;
-	for(var a=1;a<7;a++){
-		cad='';
-		for(var b=0;b<16;b++){
-			if(a==n & b%4==0){
-						c=1;
-				theBeat['rhythm'+a][b]=c
-			drawNote(c, b, a-1) 
-			}
-		}
-	}
-}
-
-
-function writeRandbeat(a){
-	
-	var d =0,c=0;
-	
-		for(var b=0;b<16;b++){
-		 d = Math.random() * 100;
-		
-			if (d > 30) c= 0;
-			if (d < 20) c= 1;
-			if (d < 8)  c= 2;
-
-			//var c=Math.floor(Math.random()*3)
-			theBeat['rhythm'+a][b]=c
-			drawNote(c, b, a-1)
-		}
-		
-	
-	//alert(theBeat.toSource())
-    
-	
-}
-
-
-
-function writeEffectbeat(){
-	var cad='{';
-	cad+='"kitIndex":'+parseInt(Math.random()*(kitName.length-1))+',';
-	cad+='"effectIndex":'+parseInt(Math.random()*(impulseResponseInfoList.length-1))+',';
-	cad+='"tempo":'+theBeat.tempo+',';
-	cad+='"swingFactor":0,';
-	cad+='"effectMix":'+Math.random()+',';
-	cad+='"kickPitchVal":'+Math.random()+',';
-	cad+='"snarePitchVal":'+Math.random()+',';
-	cad+='"hihatPitchVal":'+Math.random()+',';
-	cad+='"tom1PitchVal":'+Math.random()+',';
-	cad+='"tom2PitchVal":'+Math.random()+',';
-	cad+='"tom3PitchVal":'+Math.random()+',';
-	var d =0,c=0;
-	for(var a=1;a<7;a++){
-		cad+='"rhythm'+a+'":['
-		cad+=theBeat['rhythm'+a].join(',')
-		//cad = cad.slice(0, -1);
-		cad+='],'
-	}
-    cad = cad.slice(0, -1);
-	cad+='}'
-	return cad
-}
-
-
-function writeEffectLevelbeat(){
-	var cad='{';
-	cad+='"kitIndex":'+theBeat['kitIndex']+',';
-	cad+='"effectIndex":'+theBeat['effectIndex']+',';
-	cad+='"tempo":'+theBeat.tempo+',';
-	cad+='"swingFactor":'+theBeat.swingFactor+',';
-	cad+='"effectMix":'+Math.random()+',';
-	cad+='"kickPitchVal":'+theBeat.kickPitchVal+',';
-	cad+='"snarePitchVal":'+theBeat.snarePitchVal+',';
-	cad+='"hihatPitchVal":'+theBeat.hihatPitchVal+',';
-	cad+='"tom1PitchVal":'+theBeat.tom1PitchVal+',';
-	cad+='"tom2PitchVal":'+theBeat.tom2PitchVal+',';
-	cad+='"tom3PitchVal":'+theBeat.tom3PitchVal+',';
-	var d =0,c=0;
-	for(var a=1;a<7;a++){
-		cad+='"rhythm'+a+'":['
-		cad+=theBeat['rhythm'+a].join(',')
-		//cad = cad.slice(0, -1);
-		cad+='],'
-	}
-    cad = cad.slice(0, -1);
-	cad+='}'
-	return cad
-}
-
-
-function writePitchbeat(){
-	theBeat.kickPitchVal=Math.random();
-	theBeat.snarePitchVal=Math.random();
-	theBeat.hihatPitchVal=Math.random();
-	theBeat.tom1PitchVal=Math.random();
-	theBeat.tom2PitchVal=Math.random();
-	theBeat.tom3PitchVal=Math.random();
-}
-
-
-function writeZerobeat(){
-	var cad='{';
-	cad+='"kitIndex":4,';
-	cad+='"effectIndex":12,';
-	cad+='"tempo":'+theBeat.tempo+',';
-	cad+='"swingFactor":0,';
-	cad+='"effectMix":'+Math.random()+',';
-	cad+='"kickPitchVal":'+Math.random()+',';
-	cad+='"snarePitchVal":'+Math.random()+',';
-	cad+='"hihatPitchVal":'+Math.random()+',';
-	cad+='"tom1PitchVal":'+Math.random()+',';
-	cad+='"tom2PitchVal":'+Math.random()+',';
-	cad+='"tom3PitchVal":'+Math.random()+',';
-	var d =0,c=0;
-	for(var a=1;a<7;a++){
-		cad+='"rhythm'+a+'":['
-		for(var b=0;b<16;b++){
-		
-			cad+='0,';
-		}
-		cad = cad.slice(0, -1);
-		cad+='],'
-	}
-    cad = cad.slice(0, -1);
-	cad+='}'
-	return cad
-}
-function handleRandOk(event) {
-	var randbeat=writeRandbeatDemo()
-    var elTextarea = document.getElementById('load_textarea');
-    elTextarea.value=randbeat;
-}
-
-function handleEffectOk(event) {
-	var effectbeat=writeEffectbeat()
-    var elTextarea = document.getElementById('load_textarea');
-    elTextarea.value=effectbeat;
-}
-function handleEffectLevelOk(event) {
-	var effectbeat=writeEffectLevelbeat()
-    var elTextarea = document.getElementById('load_textarea');
-    elTextarea.value=effectbeat;
-}
-function handleZeroOk(event) {
-	var randbeat=writeZerobeat()
-    var elTextarea = document.getElementById('load_textarea');
-    elTextarea.value=randbeat;
-}
-
 
 function handleLoadCancel(event) {
     toggleLoadContainer();
@@ -1676,4 +1373,95 @@ function setFilterCutoff( cutoff ) {
 function setFilterQ( Q ) {
     if (filterNode)
         filterNode.Q.value = Q;
+}
+
+
+
+
+/////
+
+function writeVoid(n){
+	var cad='{';
+	var d =0,c=0;
+	for(var a=1;a<7;a++){
+		for(var b=0;b<16;b++){
+			if(a==n ){
+				theBeat['rhythm'+a][b]=c
+			drawNote(c, b, a-1) 
+			}
+		}
+	}
+}
+
+function writeVoidAll(){
+	var cad='{';
+	var d =0,c=0;
+	for(var a=1;a<7;a++){
+		for(var b=0;b<16;b++){
+			theBeat['rhythm'+a][b]=c
+			drawNote(c, b, a-1) 
+			
+		}
+	}
+}
+
+function writeRandbeat(a){
+	var d =0,c=0;
+		for(var b=0;b<16;b++){
+		 d = Math.random() * 100;
+			if (d > 30) c= 0;
+			if (d < 20) c= 1;
+			if (d < 8)  c= 2;
+			//var c=Math.floor(Math.random()*3)
+			theBeat['rhythm'+a][b]=c
+			drawNote(c, b, a-1)
+		}
+}
+
+function writeRandbeatAll(){
+	var cad='{';
+	var d =0,c=0;
+	for(var a=1;a<7;a++){
+		cad='';
+		for(var b=0;b<16;b++){
+			d = Math.random() * 100;
+			if (d > 30) c= 0;
+			if (d < 20) c= 1;
+			if (d < 8)  c= 2;
+			if(b%2==0  || b%4==0 ){
+				if(b%4==0 ){
+					//c=Math.floor(Math.random() * 2) + 1  ;
+					if (d > 80) c= 0;
+					if (d < 60) c= 1;
+					if (d < 8)  c= 2;
+				}
+				theBeat['rhythm'+a][b]=c
+				beatDemo[1]['rhythm'+a][b]=c
+				drawNote(c, b, a-1) 
+			}else{
+				c=0;
+				theBeat['rhythm'+a][b]=c
+				beatDemo[1]['rhythm'+a][b]=c
+				drawNote(c, b, a-1) 
+			}
+		}
+	
+	}
+	cloneRhythm();
+	//beatReset=cloneBeat(theBeat);
+}
+
+
+function loadRhythm(){
+	var cad='{';
+	var d =0,c=0;
+	for(var a=1;a<7;a++){
+		
+		for(var b=0;b<16;b++){
+			    c=beatReset['rhythm'+a][b];
+				theBeat['rhythm'+a][b]=c
+				drawNote(c, b, a-1) 
+			
+		}
+	}
 }
