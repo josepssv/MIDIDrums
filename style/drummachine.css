@@ -247,7 +247,14 @@ body {
 
 #save_textarea, #load_textarea {
 	width: 607px;
-	height: 270px;
+	height: 70px;
+	margin: 20px 40px;
+	font-size: 12px;
+	-webkit-user-select: text !important;
+}
+#flow_textarea {
+	width: 607px;
+	height: 70px;
 	margin: 20px 40px;
 	font-size: 12px;
 	-webkit-user-select: text !important;
